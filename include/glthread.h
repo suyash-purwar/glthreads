@@ -1,6 +1,11 @@
 #ifndef GLTHREAD_H
 #define GLTHREAD_H
 
+typedef enum {
+    HEAD,
+    TAIL
+} Position;
+
 typedef struct glthread_node {
     struct glthread_node* prev;
     struct glthread_node* next;
@@ -10,5 +15,19 @@ typedef struct {
     glthread_node_t* head;
     unsigned int offset;
 } glthread_t;
+
+glthread_t* glthread_init(glthread_node_t*, size_t offset);
+
+void glthread_init_node(glthread_node_t* node);
+
+int glthread_add_node(glthread_t*, glthread_node_t*, Position);
+
+int glthread_add_node_at_head(glthread_t*, glthread_node_t*);
+
+int glthread_add_node_at_tail(glthread_t*, glthread_node_t*);
+
+void glthread_free(const glthread_t*);
+
+void* glthread_node_container(const glthread_t*, const glthread_node_t*);
 
 #endif
