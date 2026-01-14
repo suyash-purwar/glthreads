@@ -7,27 +7,35 @@ typedef enum {
 } Position;
 
 typedef struct glthread_node {
-    struct glthread_node* prev;
-    struct glthread_node* next;
+    struct glthread_node *prev;
+    struct glthread_node *next;
 } glthread_node_t;
 
 typedef struct {
-    glthread_node_t* head;
+    glthread_node_t *head;
     unsigned int offset;
 } glthread_t;
 
-glthread_t* glthread_init(glthread_node_t*, size_t offset);
+glthread_t *glthread_init(glthread_node_t *, size_t offset);
 
-void glthread_init_node(glthread_node_t* node);
+void glthread_init_node(glthread_node_t *node);
 
-int glthread_add_node(glthread_t*, glthread_node_t*, Position);
+void *glthread_node_container(const glthread_t *, const glthread_node_t *);
 
-int glthread_add_node_at_head(glthread_t*, glthread_node_t*);
+void glthread_print_node(const glthread_t *, const glthread_node_t *, void fn(void *arg));
 
-int glthread_add_node_at_tail(glthread_t*, glthread_node_t*);
+int glthread_add_node(glthread_t *, glthread_node_t *, Position);
 
-void glthread_free(const glthread_t*);
+void glthread_add_node_at_head(glthread_t *, glthread_node_t *);
 
-void* glthread_node_container(const glthread_t*, const glthread_node_t*);
+void glthread_add_node_at_tail(glthread_t *, glthread_node_t *);
+
+int glthread_remove_node(glthread_t *, Position);
+
+void glthread_remove_node_at_head(glthread_t *);
+
+void glthread_remove_node_at_tail(const glthread_t *);
+
+void glthread_free(const glthread_t *);
 
 #endif
