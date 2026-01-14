@@ -75,7 +75,7 @@ int main(void) {
 
     commit_t *commit1 = create_commit("suyashpurwar4035@gmail.com", "suyash", "Initial commit");
     commit_t *commit2 = create_commit("suyash@couchbase.com", "suyashp", "Made it in!");
-    commit_t *commit3 = create_commit("ash@tigerbeetle .com", "purwarsuyash", "systems engineer");
+    commit_t *commit3 = create_commit("ash@tigerbeetle.com", "purwarsuyash", "systems engineer");
     commit_t *commit4 = create_commit("suyash@turso.com", "suyash", "go systems!");
     commit_t *commit5 = create_commit("suyash@nvidia.com", "suyash", "GPU goes brrrr");
     commit_t *commit6 = create_commit("suyash@texassystems.com", "suyash", "fix x86");
