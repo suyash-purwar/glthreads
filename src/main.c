@@ -10,13 +10,15 @@
 #define MAX_USER_NAME_LENGTH 21
 #define MAX_MESSAGE_LENGTH 101
 
+GLTHREAD_NODE_CONTAINER(commit_container, commit_t, node);
+
 char *get_commit_time(const commit_t *commit) {
     const time_t timestamp = commit->timestamp;
     const struct tm *local_time = localtime(&timestamp);
     char *time_str = asctime(local_time);
     const size_t time_str_len = strlen(time_str);
 
-    time_str[time_str_len - 2] = '\0';
+    time_str[time_str_len - 1] = '\0';
 
     return time_str;
 }
@@ -35,8 +37,8 @@ commit_t *create_commit(const char *email, const char *user_name, const char *me
     return commit;
 }
 
-void print_commit(void *arg) {
-    commit_t *commit = arg;
+void print_commit(glthread_node_t* node) {
+    commit_t *commit = commit_container(node);
 
     char *time_str = get_commit_time(commit);
 
@@ -48,30 +50,30 @@ void print_commit(void *arg) {
     printf("-------------------------------------\n");
 }
 
-void print_commit_timelog(void *arg, const size_t index) {
-    const commit_t *commit = arg;
+void print_commit_timelog(glthread_node_t *node, const size_t index) {
+    commit_t *commit = commit_container(node);
 
     char *time_str = get_commit_time(commit);
 
-    printf("%lu) %s | %s\n", index, time_str, commit->message);
+    printf("%lu) %s | %s\n", index + 1, time_str, commit->message);
 }
 
-unsigned char find_committers(const void *arg, const size_t index) {
+unsigned char find_committers(glthread_node_t* node, const size_t index) {
     const char *name = "suyash";
-    const commit_t *commit = arg;
+    const commit_t *commit = commit_container(node);
 
     return strcmp(commit->user_name, name) == 0;
 }
 
-void print_commits_list(commit_t **commits, size_t commits_len) {
-    for (size_t i = 0; i < commits_len; i++) {
-        print_commit(commits[i]);
+void print_commits_list(glthread_node_t **nodes, size_t nodes_len) {
+    for (size_t i = 0; i < nodes_len; i++) {
+        print_commit(nodes[i]);
     }
 }
 
 int main(void) {
-    glthread_t *commit_thread = glthread_init(NULL, offsetof(commit_t, node));
-    glthread_t *branch1 = glthread_init(NULL, offsetof(commit_t, node));
+    commit_thread_t master_branch = { NULL };
+    commit_thread_t branch1 = { NULL };
 
     commit_t *commit1 = create_commit("suyashpurwar4035@gmail.com", "suyash", "Initial commit");
     commit_t *commit2 = create_commit("suyash@couchbase.com", "suyashp", "Made it in!");
@@ -84,38 +86,41 @@ int main(void) {
     commit_t *commit9 = create_commit("suyash@clickhouse.com", "purwarsuyash", "feat: db");
     commit_t *commit10 = create_commit("suyash@es.com", "suyash", "feat: inverted index");
 
-    glthread_add_node(commit_thread, &commit1->node, TAIL);
-    glthread_add_node(commit_thread, &commit2->node, HEAD);
-    glthread_add_node(commit_thread, &commit3->node, TAIL);
-    glthread_add_node(commit_thread, &commit4->node, HEAD);
-    glthread_add_node(commit_thread, &commit5->node, HEAD);
-    glthread_add_node(commit_thread, &commit7->node, TAIL);
-    glthread_add_node(commit_thread, &commit6->node, HEAD);
-    glthread_add_node(commit_thread, &commit10->node, HEAD);
-    glthread_add_node(commit_thread, &commit8->node, HEAD);
-    glthread_add_node(commit_thread, &commit9->node, TAIL);
+    glthread_add_node(&master_branch.head, &commit1->node, TAIL);
+    glthread_add_node(&master_branch.head, &commit2->node, HEAD);
+    glthread_add_node(&master_branch.head, &commit3->node, TAIL);
+    glthread_add_node(&master_branch.head, &commit4->node, HEAD);
+    glthread_add_node(&master_branch.head, &commit5->node, HEAD);
+    glthread_add_node(&master_branch.head, &commit7->node, TAIL);
+    glthread_add_node(&master_branch.head, &commit6->node, HEAD);
+    glthread_add_node(&master_branch.head, &commit10->node, HEAD);
+    glthread_add_node(&master_branch.head, &commit8->node, HEAD);
+    glthread_add_node(&master_branch.head, &commit9->node, TAIL);
 
-    glthread_print_node(commit_thread, commit_thread->head, print_commit);
-    glthread_print_node(commit_thread, commit_thread->head->next, print_commit);
+    print_commit(master_branch.head);
+    print_commit(&commit4 -> node);
 
-    const size_t commit_thread_len = glthread_len(commit_thread);
-    const size_t branch1_len = glthread_len(branch1);
+    const size_t master_branch_len = glthread_len(master_branch.head);
+    const size_t branch1_len = glthread_len(branch1.head);
 
-    printf("%lu\n", commit_thread_len);
+    printf("%lu\n", master_branch_len);
     printf("%lu\n", branch1_len);
 
-    glthread_foreach(commit_thread, print_commit_timelog);
+    glthread_foreach(master_branch.head, print_commit_timelog);
 
-    size_t *commits_length;
-    commit_t **commits = (commit_t **) glthread_where(commit_thread, find_committers, commits_length);
+    size_t nodes_length;
+    glthread_node_t **nodes = glthread_where(master_branch.head, find_committers, &nodes_length);
 
-    print_commits_list(commits, *commits_length);
-    printf("%lu\n", *commits_length);
+    print_commits_list(nodes, nodes_length);
+    printf("%lu\n", nodes_length);
 
-    glthread_free(commit_thread);
-    glthread_free(branch1);
+    printf("%s\n", commit_container(commit5 -> node.prev) -> message);
 
-    free(commits);
+    // TODO: Fix glthread_remove_all function
+    // glthread_remove_all(master_branch.head);
+    // glthread_remove_all(branch1.head);
+
+    // free(commits);
 
     return 0;
 }

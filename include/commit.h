@@ -1,8 +1,12 @@
+#ifndef COMMIT_H
+#define COMMIT_H
+
 #include <time.h>
 #include "glthread.h"
 
-#ifndef COMMIT_H
-#define COMMIT_H
+typedef struct commit_thread {
+    glthread_node_t* head;
+} commit_thread_t;
 
 typedef struct commit {
     time_t timestamp;
