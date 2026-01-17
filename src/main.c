@@ -71,6 +71,15 @@ void print_commits_list(glthread_node_t **nodes, size_t nodes_len) {
     }
 }
 
+void delete_commit(glthread_node_t* commit_node, size_t size) {
+    free(commit_container(commit_node));
+}
+
+void delete_branch(commit_thread_t* commit_thread) {
+    glthread_foreach(commit_thread -> head, delete_commit);
+    commit_thread = NULL;
+}
+
 int main(void) {
     commit_thread_t master_branch = { NULL };
     commit_thread_t branch1 = { NULL };
@@ -100,7 +109,7 @@ int main(void) {
     print_commit(master_branch.head);
     print_commit(&commit4 -> node);
 
-    const size_t master_branch_len = glthread_len(master_branch.head);
+    size_t master_branch_len = glthread_len(master_branch.head);
     const size_t branch1_len = glthread_len(branch1.head);
 
     printf("%lu\n", master_branch_len);
@@ -112,15 +121,27 @@ int main(void) {
     glthread_node_t **nodes = glthread_where(master_branch.head, find_committers, &nodes_length);
 
     print_commits_list(nodes, nodes_length);
+    free(nodes);
     printf("%lu\n", nodes_length);
 
     printf("%s\n", commit_container(commit5 -> node.prev) -> message);
 
-    // TODO: Fix glthread_remove_all function
-    // glthread_remove_all(master_branch.head);
-    // glthread_remove_all(branch1.head);
+    printf("%s\n", commit_container(master_branch.head) -> message);
+    glthread_node_t* removed_node = glthread_remove_node_at_head(&master_branch.head);
+    free(commit_container(removed_node));
+    printf("%s\n", commit_container(master_branch.head) -> message);
 
-    // free(commits);
+    glthread_node_t* last_node = glthread_get_last_node(master_branch.head);
+    printf("%s\n", commit_container(last_node) -> message);
+    glthread_remove_node(&master_branch.head, TAIL);
+    free(commit_container(last_node));
+    last_node = glthread_get_last_node(master_branch.head);
+    printf("%s\n", commit_container(last_node) -> message);
+
+    master_branch_len = glthread_len(master_branch.head);
+    printf("Updated length: %lu\n", master_branch_len);
+
+    delete_branch(&master_branch);
 
     return 0;
 }

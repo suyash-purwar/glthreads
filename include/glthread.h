@@ -20,19 +20,19 @@ typedef struct glthread_node {
 
 void glthread_init_node(glthread_node_t *);
 
+glthread_node_t* glthread_get_last_node(glthread_node_t *);
+
 int glthread_add_node(glthread_node_t **, glthread_node_t *, Position);
 
 void glthread_add_node_at_head(glthread_node_t **, glthread_node_t *);
 
 void glthread_add_node_at_tail(glthread_node_t **, glthread_node_t *);
 
-int glthread_remove_node(glthread_node_t *, Position);
+glthread_node_t* glthread_remove_node(glthread_node_t **, Position);
 
-void glthread_remove_node_at_head(glthread_node_t *);
+glthread_node_t* glthread_remove_node_at_head(glthread_node_t **);
 
-void glthread_remove_node_at_tail(glthread_node_t *);
-
-void glthread_remove_all(glthread_node_t *);
+glthread_node_t* glthread_remove_node_at_tail(glthread_node_t **);
 
 size_t glthread_len(const glthread_node_t *);
 

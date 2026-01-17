@@ -10,6 +10,16 @@ void glthread_init_node(glthread_node_t *node) {
     node->prev = NULL;
 }
 
+glthread_node_t* glthread_get_last_node(glthread_node_t* node) {
+    glthread_node_t* curr_node = node;
+
+    while (curr_node -> next != NULL) {
+        curr_node = curr_node -> next;
+    }
+
+    return curr_node;
+}
+
 int glthread_add_node(glthread_node_t **head_node, glthread_node_t *node, const Position position) {
     switch (position) {
         case HEAD:
@@ -34,63 +44,44 @@ void glthread_add_node_at_head(glthread_node_t **head_node, glthread_node_t *nod
 }
 
 void glthread_add_node_at_tail(glthread_node_t **head_node, glthread_node_t *node) {
-    glthread_node_t *curr_node = *head_node;
-
-    if (curr_node == NULL) {
+    if (*head_node == NULL) {
         *head_node = node;
         return;
     }
 
-    while (curr_node->next != NULL) {
-        curr_node = curr_node->next;
-    }
+    glthread_node_t* last_node = glthread_get_last_node(*head_node);
 
-    curr_node->next = node;
-    node->prev = curr_node;
+    last_node->next = node;
+    node->prev = last_node;
 }
 
-int glthread_remove_node(glthread_node_t *head_node, const Position position) {
+glthread_node_t* glthread_remove_node(glthread_node_t **head_node, const Position position) {
     switch (position) {
         case HEAD:
-            glthread_remove_node_at_head(head_node);
-            return 0;
+            return glthread_remove_node_at_head(head_node);
         case TAIL:
-            glthread_remove_node_at_tail(head_node);
-            return 0;
+            return glthread_remove_node_at_tail(head_node);
         default:
-            return -1;
+            return NULL;
     }
 }
 
-void glthread_remove_node_at_head(glthread_node_t *head_node) {
-    glthread_node_t *temp = head_node;
-    head_node = head_node->next;
-    head_node->prev = NULL;
-    free(temp);
+glthread_node_t* glthread_remove_node_at_head(glthread_node_t **head_node) {
+    glthread_node_t *removed_head_node = *head_node;
+
+    *head_node = (*head_node)->next;
+    (*head_node)->prev = NULL;
+
+    return removed_head_node;
 }
 
-void glthread_remove_node_at_tail(glthread_node_t *head_node) {
-    glthread_node_t *curr_node = head_node;
+glthread_node_t* glthread_remove_node_at_tail(glthread_node_t **head_node) {
+    glthread_node_t *removed_last_node = glthread_get_last_node(*head_node);
 
-    while (curr_node->next != NULL) {
-        curr_node = curr_node->next;
-    }
+    removed_last_node->prev->next = NULL;
+    removed_last_node->prev = NULL;
 
-    curr_node->prev->next = NULL;
-    free(curr_node);
-}
-
-void glthread_remove_all(glthread_node_t *head_node) {
-    glthread_node_t *curr_node = head_node;
-
-    while (curr_node != NULL) {
-        glthread_node_t *next_node = curr_node->next;
-
-        curr_node -> next = NULL;
-        curr_node -> prev = NULL;
-
-        curr_node = next_node;
-    }
+    return removed_last_node;
 }
 
 size_t glthread_len(const glthread_node_t *head_node) {
